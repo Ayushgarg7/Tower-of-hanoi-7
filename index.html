@@ -1,0 +1,107 @@
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">  
+
+      <link rel="stylesheet" type="text/css" href="styles.css" />
+      <title>Tower of Hanoi</title>
+    </head>
+    <body>
+      <p class="intro">Tower Of Hanoi</p>
+      <button id="instructions" onclick="showInstructions()">
+        Click here to know instructions
+      </button>
+      <p id="moves">Moves: 0</p>
+      <div id="selected-towers">
+        <span>From Tower:</span>
+        <span id="from-tower-label">-</span>
+        <span>To Tower:</span>
+        <span id="to-tower-label">-</span>
+      </div>
+      <div class="game-container">
+        <div class="tower" id="tower1" onclick="selectTower(0)"></div>
+        <div class="tower" id="tower2" onclick="selectTower(1)"></div>
+        <div class="tower" id="tower3" onclick="selectTower(2)"></div>
+      </div>
+
+      <button id="undo-button" onclick="undoMove()">Undo</button>
+      <button id="start-button" onclick="startGame()">
+        Start / Restart Game
+      </button>
+
+      <div class="authontication">
+        <a href="https://github.com/Ayushgarg7" target="_blank">
+            <i class="fab fa-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/ayush-garg-258784221/" target="_blank">
+            <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="mailto:ayushgarg1827@gmail.com" target="_blank">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+    
+
+      <div id="instructions-modal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeInstructionsModal()">&times;</span>
+
+          <h2>
+            Certainly! Here are the necessary instructions for the Tower of Hanoi
+            game:
+          </h2>
+
+          <h3>Objective:</h3>
+          Move all the disks from Tower 1 to Tower 3.
+
+          <h3>Rules:</h3>
+
+          <p>You can only move one disk at a time.</p>
+          <p>
+            A disk can only be placed on top of a larger disk or an empty tower.
+          </p>
+          <p>Larger disks cannot be placed on top of smaller disks.</p>
+
+          <h3>Towers:</h3>
+
+          <p>Towers are numbered 1, 2, and 3.</p>
+          <p>
+            Disk movement is specified by selecting the tower from which to move a
+            disk and the tower to which the disk should be placed.
+          </p>
+          <h3>How to Play:</h3>
+
+          <p>Click on the tower from which you want to move a disk.</p>
+          <p>Click on the tower to which you want to place the selected disk.</p>
+          <p>Follow the rules to ensure a valid move.</p>
+          <h3>Winning:</h3>
+
+          <p>
+            The game is won when all the disks are successfully moved to Tower 3
+            in the correct order, with the largest disk at the bottom.
+          </p>
+          <h3>Additional Controls:</h3>
+
+          <p>Use the "Start / Restart Game" button to reset the game.</p>
+       
+          <p>
+            The "Click here to know instructions" button provides a quick
+            reference to the game rules.
+          </p>
+          <h2>
+            Remember, patience and strategic thinking are key to solving the Tower
+            of Hanoi puzzle. Enjoy the game!
+          </h2>
+        </div>
+      </div>
+
+      <div id="celebration" class="hidden">
+        <div class="confetti"></div>
+        <div class="balloons"></div>
+        <div class="message">Congratulations!</div>
+      </div>
+      <script src="script.js"></script>
+    </body>
+  </html>
