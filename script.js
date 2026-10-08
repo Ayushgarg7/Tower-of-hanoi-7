@@ -3,61 +3,70 @@ let moves = 0;
 let selectedFromTower = -1;
 let selectedToTower = -1;
 let moveHistory = [];
-let towerSelectionInProgress = false; 
+
+const MAX_DISK_WIDTH = 90; // percentage
+const MIN_DISK_WIDTH = 30; // percentage
+const DISK_COLORS = [
+    'var(--disk-1)', 
+    'var(--disk-2)', 
+    'var(--disk-3)', 
+    'var(--disk-4)', 
+    'var(--disk-5)'
+];
 
 function startGame() {
   towers = [[5, 4, 3, 2, 1], [], []];
   moves = 0;
   selectedFromTower = -1;
   selectedToTower = -1;
-  document.getElementById("from-tower-label").textContent = "-";
-  document.getElementById("to-tower-label").textContent = "-";
-  drawTowers();
-  document.getElementById("moves").textContent = "Moves: 0";
   moveHistory = [];
-  towerSelectionInProgress = false;
+  
+  updateLabels();
+  document.getElementById("moves").innerHTML = "Moves: <span>0</span>";
+  document.getElementById("celebration").classList.add("hidden");
+  
+  drawTowers();
 }
 
 function resetSelections() {
   selectedFromTower = -1;
   selectedToTower = -1;
-  document.getElementById("from-tower-label").textContent = "-";
-  document.getElementById("to-tower-label").textContent = "-";
+  updateLabels();
+  drawTowers(); // To remove selected states visually
 }
 
-function moveDisk() {
-  if (selectedFromTower !== -1 && selectedToTower !== -1) {
-    if (move(selectedFromTower, selectedToTower)) {
-      moves++;
-      drawTowers();
-      document.getElementById("moves").textContent = `Moves: ${moves}`;
-      moveHistory.push({ from: selectedFromTower, to: selectedToTower });
-      resetSelections();
-      if (towers[2].length === 5) {
-        celebrateWin();
-      }
+function updateLabels() {
+  document.getElementById("from-tower-label").textContent = selectedFromTower !== -1 ? selectedFromTower + 1 : "-";
+  document.getElementById("to-tower-label").textContent = selectedToTower !== -1 ? selectedToTower + 1 : "-";
+  
+  // Highlight active tower visually
+  for(let i=0; i<3; i++) {
+    const t = document.getElementById(`tower${i+1}`);
+    if (i === selectedFromTower) {
+        t.classList.add('selected-from');
     } else {
-      alert("Invalid move. Follow the rules of Tower of Hanoi.");
-      resetSelections();
+        t.classList.remove('selected-from');
     }
-  } else {
-    alert('Select both "From Tower" and "To Tower" before moving the disk.');
   }
 }
 
 function undoMove() {
   if (moveHistory.length > 0) {
     const lastMove = moveHistory.pop();
-    move(lastMove.to, lastMove.from);
+    // Directly move it back without rules checking
+    const disk = towers[lastMove.to].pop();
+    towers[lastMove.from].push(disk);
+    
     moves--;
+    document.getElementById("moves").innerHTML = `Moves: <span>${moves}</span>`;
+    resetSelections();
     drawTowers();
-    document.getElementById("moves").textContent = `Moves: ${moves}`;
   }
 }
 
 function move(from, to) {
   if (towers[from].length === 0) {
-    return false;
+    return false; // from tower is empty
   }
 
   if (
@@ -75,57 +84,99 @@ function drawTowers() {
   for (let i = 0; i < 3; i++) {
     let towerElement = document.getElementById(`tower${i + 1}`);
     towerElement.innerHTML = "";
+    
     for (let j = 0; j < towers[i].length; j++) {
+      let diskSize = towers[i][j];
       let diskElement = document.createElement("div");
       diskElement.className = "disk";
-      diskElement.style.height = `${towers[i][j] * 30}px`;
-      towerElement.appendChild(diskElement);
+      
+      // Calculate width instead of height
+      let widthStep = (MAX_DISK_WIDTH - MIN_DISK_WIDTH) / 4; // 5 disks
+      let diskWidth = MIN_DISK_WIDTH + ((diskSize - 1) * widthStep);
+      
+      diskElement.style.width = `${diskWidth}%`;
+      diskElement.style.background = DISK_COLORS[diskSize - 1];
+      
+      // Add selected animation class if it's the top disk of the selectedFromTower
+      if (i === selectedFromTower && j === towers[i].length - 1) {
+          diskElement.classList.add("selected");
+      }
 
-      let barName = document.createElement("div");
-      barName.className = "bar-name";
-      barName.textContent = `Bar ${towers[i][j]}`;
-      diskElement.appendChild(barName);
+      diskElement.textContent = diskSize; // Show number inside
+      towerElement.appendChild(diskElement);
     }
   }
 }
 
 function selectTower(towerIndex) {
     if (selectedFromTower === -1) {
+      if (towers[towerIndex].length === 0) return; // Can't select empty tower
+      
       selectedFromTower = towerIndex;
-      document.getElementById("from-tower-label").textContent = towerIndex + 1;
+      updateLabels();
+      drawTowers(); // re-draw to show selection animation
+      
     } else if (selectedToTower === -1) {
+      // Clicking the same tower deselects it
+      if (selectedFromTower === towerIndex) {
+          resetSelections();
+          return;
+      }
+      
       selectedToTower = towerIndex;
-      document.getElementById("to-tower-label").textContent = towerIndex + 1;
+      updateLabels();
 
       if (!move(selectedFromTower, selectedToTower)) {
-        alert("Invalid move. Follow the rules of Tower of Hanoi.");
+        // We will just do a visual shake or simple console log, alerts are jarring
+        // For now, reset selection smoothly
         resetSelections();
       } else {
-
         moves++;
-        drawTowers();
-        document.getElementById("moves").textContent = `Moves: ${moves}`;
+        document.getElementById("moves").innerHTML = `Moves: <span>${moves}</span>`;
         moveHistory.push({ from: selectedFromTower, to: selectedToTower });
+        
         resetSelections();
+        drawTowers();
   
-
         if (towers[2].length === 5) {
           celebrateWin();
         }
       }
     }
-  }
-  
+}
 
-startGame();
+function fireConfetti() {
+    var duration = 3 * 1000;
+    var animationEnd = Date.now() + duration;
+    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    var interval = setInterval(function() {
+      var timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      var particleCount = 50 * (timeLeft / duration);
+      
+      // since particles fall down, start a bit higher than random
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+    }, 250);
+}
 
 function celebrateWin() {
   const celebration = document.getElementById("celebration");
   celebration.classList.remove("hidden");
-  setTimeout(() => {
-    celebration.classList.add("hidden");
-  }, 8000);
-  alert("Hey !! Congratulations ... You won the game");
+  
+  // Fire the canvas confetti
+  if(typeof confetti === 'function') {
+      fireConfetti();
+  }
 }
 
 function showInstructions() {
@@ -145,10 +196,5 @@ window.onclick = function (event) {
   }
 };
 
-document.addEventListener("keypress", function (event) {
-  if (event.key === "Enter") {
-    moveDisk();
-  }
-});
-
-
+// Initialize
+startGame();
